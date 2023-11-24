@@ -19,8 +19,15 @@ int main(int argc, char** argv) {
 
     bool game = true;
 
+    int xMouse;
+    int yMouse;
+
+    bool startSelected = false;
+
     Maze* maze = new Maze(16, 32, 32);
     maze->setup();
+
+    std::cout << "SELECT STARTING TILE FOR GENERATE MAZE" << std::endl;
 
     while (game) {
         SDL_Event event;
@@ -28,11 +35,43 @@ int main(int argc, char** argv) {
             if (event.type == SDL_QUIT) {
                 game = false;
             }
-            if (event.type == SDL_KEYDOWN) {
+            if (event.type == SDL_KEYDOWN) { // Reset Button
                 if (event.key.keysym.sym == SDLK_r) {
+                    std::cout << "MAZE RESET" << std::endl;
+                    startSelected = false;
                     maze->reset();
                     maze->setup();
                 }
+
+                if (event.key.keysym.sym == SDLK_q) { // Debug Button
+                    if (!maze->getMazeStatus()) {
+                        std::cout << "PLEASE WAIT FOR THE MAZE TO BE GENERATED" << std::endl;
+                    }
+                    else {
+                        maze->shortestPath(renderer, 31, 14, 5, 5);
+                    }
+                }
+            }
+
+            else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    if (!startSelected) {
+                        startSelected = true;
+                        maze->setStartTile(int(xMouse / 16), int(yMouse / 16));
+                    }
+                }
+                if (event.button.button == SDL_BUTTON_RIGHT) {
+                    if (!maze->getMazeStatus()) {
+                        std::cout << "PLEASE WAIT FOR THE MAZE TO BE GENERATED" << std::endl;
+                    }
+                    else {
+                        maze->tileInformation(int(xMouse / 16), int(yMouse / 16));
+                    }
+                }
+            }
+            else if (event.type == SDL_MOUSEMOTION) {
+                SDL_GetMouseState(&xMouse, &yMouse);
+                maze->getTile(renderer, int(xMouse / 16), int(yMouse / 16));
             }
         }
         
@@ -40,7 +79,11 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-        maze->generate(renderer);
+        maze->mazeRender(renderer);
+
+        if (startSelected) {
+            maze->generate(renderer);
+        }
         
         SDL_RenderPresent(renderer);
     }

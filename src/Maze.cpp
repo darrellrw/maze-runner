@@ -19,9 +19,6 @@ void Maze::setup() {
         }
     }
 
-    // Set starting Tile
-    this->currentTile = this->grid[0][0];
-
     // Set available neighbour Tile
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < columns; c++) {
@@ -64,8 +61,17 @@ void Maze::reset() {
     }
 
     this->currentTile = nullptr;
+    this->mazeComplete = false;
+    this->mazeSolved = false;
 
     this->stack.clear();
+}
+
+void Maze::setStartTile(int x, int y) {
+    // Set starting Tile
+    this->xStart = x;
+    this->yStart = y;
+    this->currentTile = this->grid[this->yStart][this->xStart];
 }
 
 Tile *Maze::checkNeighbour(Tile* tile) {
@@ -114,28 +120,127 @@ void Maze::removeWall(Tile *tile1, Tile *tile2) {
     }
 }
 
-void Maze::generate(SDL_Renderer *renderer) {
-    this->currentTile->setVisited(true);
-
+void Maze::mazeRender(SDL_Renderer *renderer) {
     for (int r = 0; r < this->rows; r++) {
         for (int c = 0; c < this->columns; c++) {
             this->grid[r][c]->showWall(renderer);
         }
     }
+}
 
-    Tile* nextTile = this->checkNeighbour(this->currentTile);
+void Maze::generate(SDL_Renderer *renderer) {
+    if (!this->mazeComplete) {
+        this->currentTile->setVisited(true);
 
-    if (nextTile != nullptr) {
-        nextTile->setVisited(true);
-        this->stack.push_back(this->currentTile);
-        nextTile->drawTile(renderer, 255, 0, 0);
-        this->removeWall(this->currentTile, nextTile);
-        this->currentTile = nextTile;
+        Tile* nextTile = this->checkNeighbour(this->currentTile);
+        Tile* tile = nullptr;
+
+        if (nextTile != nullptr) { // Check Neigbour for Generating
+            nextTile->setVisited(true);
+            this->stack.push_back(this->currentTile);
+            nextTile->drawTile(renderer, 255, 0, 0);
+            this->removeWall(this->currentTile, nextTile);
+            this->currentTile = nextTile;
+        }
+        else if (this->stack.size() > 0) { // Backtracking
+            tile = this->stack.back();
+            this->stack.pop_back();
+            this->currentTile = tile;
+            currentTile->drawTile(renderer, 255, 0, 0);
+        }
+
+        if (tile == this->grid[this->yStart][this->xStart]) {
+            this->mazeComplete = true;
+            std::cout << "MAZE COMPLETE" << std::endl;
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < columns; c++) {
+                    this->grid[r][c]->setVisited(false);
+                    this->grid[r][c]->neighbourNull();
+                }
+            }
+        }
     }
-    else if (this->stack.size() > 0) {
-        Tile* tile = this->stack.back();
-        this->stack.pop_back();
-        this->currentTile = tile;
-        currentTile->drawTile(renderer, 255, 0, 0);
+}
+
+bool Maze::shortestPath(SDL_Renderer *renderer, int xStart, int yStart, int xEnd, int yEnd) { // BFS karena modifikasi DFS untuk unweight membingungkan
+    if (this->mazeComplete && !this->mazeSolved) {
+        std::list<Tile*> queue = {};
+
+        std::map<Tile*, Tile*> pred = {};
+
+        this->grid[xStart][yStart]->setColp(0, true);
+
+        Tile* startTile = this->grid[xStart][yStart];
+        startTile->setVisited(true);
+
+        queue.push_back(startTile);
+        pred[startTile] = nullptr;
+
+        while (!queue.empty()) {
+            Tile* u = queue.front();
+            queue.pop_front();
+
+            for (int i = 0; i < u->getVectorNeighbour().size(); i++) {
+                if (!u->getVectorNeighbour()[i]->getVisited()) {
+                    u->getVectorNeighbour()[i]->setVisited(true);
+                    queue.push_back(u->getVectorNeighbour()[i]);
+                    pred[u->getVectorNeighbour()[i]] = u;
+
+                    if (u->getVectorNeighbour()[i] == this->grid[xEnd][yEnd]) {
+                        this->grid[xEnd][yEnd]->setColp(1, true);
+
+                        std::vector<Tile*> path;
+                        Tile* crawl = this->grid[xEnd][yEnd];
+
+                        path.push_back(crawl);
+
+                        while (crawl != nullptr) {
+                            path.push_back(crawl);
+                            crawl = pred[crawl];
+                        }              
+
+                        for (int hh = path.size() - 1; hh >= 0; hh--) {
+                            path[hh]->setHoverPath(true);
+                        }
+
+                        for (int r = 0; r < rows; r++) {
+                            for (int c = 0; c < columns; c++) {
+                                this->grid[r][c]->setVisited(false);
+                            }
+                        }
+                        std::cout << "SOLVED" << std::endl;
+                        this->mazeSolved = true;
+                        return true;
+                    }
+                }
+            }
+        }
     }
+    this->mazeSolved = false;
+    return false;
+}
+
+void Maze::getTile(SDL_Renderer *renderer, int x, int y) {
+     for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < columns; c++) {
+            if (this->grid[r][c] == this->grid[y][x]) {
+                this->grid[y][x]->setHover(true);
+            }
+            else {
+                this->grid[r][c]->setHover(false);
+            }
+        }
+    }
+}
+
+Tile* Maze::getTile(int x, int y) {
+    return this->grid[y][x];
+}
+
+void Maze::tileInformation(int x, int y) {
+    this->grid[y][x]->tileInformation();
+}
+
+bool Maze::getMazeStatus() {
+    return this->mazeComplete;
 }

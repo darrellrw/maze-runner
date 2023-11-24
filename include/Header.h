@@ -4,6 +4,9 @@
 #include <iostream>
 #include <vector>
 
+#include <list>
+#include <map>
+
 #include <SDL2/SDL.h>
 
 #define WINDOW_TITLE "Maze Runner (Press 'R' to Reset)"

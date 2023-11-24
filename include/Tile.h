@@ -13,6 +13,11 @@ class Tile {
         bool bottomWall = true;
 
         bool visited = false;
+        bool hover = false;
+        bool hoverPath = false;
+
+        bool startingTile = false;
+        bool endingTile = false;
 
         Tile* topNeighbour = nullptr;
         Tile* rightNeighbour = nullptr;
@@ -28,16 +33,25 @@ class Tile {
 
         void setNeighbour(int loc, Tile* value);
         Tile* getNeighbour(int loc);
+        std::vector<Tile*> getVectorNeighbour();
 
         void setWall(int loc, bool value);
 
         void setVisited(bool visit);
         bool getVisited();
 
+        void setHover(bool hover);
+        void setHoverPath(bool hoverPath);
+        void setColp(int loc, bool colp);
+
         void drawWall(int loc, SDL_Renderer* renderer);
         void drawTile(SDL_Renderer* renderer, int r, int g, int b);
 
         void showWall(SDL_Renderer* renderer);
+
+        void tileInformation();
+
+        void neighbourNull();
 };
 
 #endif

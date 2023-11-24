@@ -14,6 +14,12 @@ class Maze {
 
         std::vector<Tile*> stack = {};
 
+        bool mazeComplete = false;
+        bool mazeSolved = false;
+
+        int xStart;
+        int yStart;
+
     public:
         Maze(int tileSize, int rows, int columns);
         ~Maze();
@@ -21,11 +27,24 @@ class Maze {
         void setup();
         void reset();
 
+        void setStartTile(int x, int y);
+
         Tile* checkNeighbour(Tile* tile);
 
         void removeWall(Tile *tile1, Tile *tile2);
 
         void generate(SDL_Renderer* renderer);
+
+        void mazeRender(SDL_Renderer *renderer);
+
+        bool shortestPath(SDL_Renderer *renderer, int xStart, int yStart, int xEnd, int yEnd);
+
+        void getTile(SDL_Renderer *renderer, int x, int y);
+        Tile* getTile(int x, int y);
+
+        void tileInformation(int x, int y);
+
+        bool getMazeStatus();
 };
 
 #endif
