@@ -90,7 +90,7 @@ Tile *Maze::checkNeighbour(Tile* tile) {
         neighbours.push_back(tile->getNeighbour(3));
     }
     
-    if (neighbours.size() != 0) {
+    if (neighbours.size() != 0) { // Randomisasi penentuan rute DFS
         return neighbours[(int)(rand() % neighbours.size())];
     }
     else {
@@ -135,7 +135,7 @@ void Maze::generate(SDL_Renderer *renderer) {
         Tile* nextTile = this->checkNeighbour(this->currentTile);
         Tile* tile = nullptr;
 
-        if (nextTile != nullptr) { // Check Neigbour for Generating
+        if (nextTile != nullptr) { // Check Neighbour for Generating
             nextTile->setVisited(true);
             this->stack.push_back(this->currentTile);
             nextTile->drawTile(renderer, 255, 0, 0);
@@ -149,7 +149,7 @@ void Maze::generate(SDL_Renderer *renderer) {
             currentTile->drawTile(renderer, 255, 0, 0);
         }
 
-        if (tile == this->grid[this->yStart][this->xStart]) {
+        if (tile == this->grid[this->yStart][this->xStart]) {  // Jika sudah tidak ada lagi tile yang dapat dikunjungi (Stack kosong)
             this->mazeComplete = true;
             std::cout << "MAZE COMPLETE" << std::endl;
             for (int r = 0; r < rows; r++) {
@@ -170,23 +170,23 @@ bool Maze::shortestPath(SDL_Renderer *renderer, int xStart, int yStart, int xEnd
 
         this->grid[xStart][yStart]->setColp(0, true);
 
-        Tile* startTile = this->grid[xStart][yStart];
+        Tile* startTile = this->grid[xStart][yStart]; // Masukkan Input
         startTile->setVisited(true);
 
         queue.push_back(startTile);
         pred[startTile] = nullptr;
 
         while (!queue.empty()) {
-            Tile* u = queue.front();
+            Tile* u = queue.front(); // Inisiasi U
             queue.pop_front();
 
             for (int i = 0; i < u->getVectorNeighbour().size(); i++) {
                 if (!u->getVectorNeighbour()[i]->getVisited()) {
                     u->getVectorNeighbour()[i]->setVisited(true);
-                    queue.push_back(u->getVectorNeighbour()[i]);
-                    pred[u->getVectorNeighbour()[i]] = u;
+                    queue.push_back(u->getVectorNeighbour()[i]); // Masukkan Neigbour ke Queue
+                    pred[u->getVectorNeighbour()[i]] = u; // Masukkan sebagai path prediction
 
-                    if (u->getVectorNeighbour()[i] == this->grid[xEnd][yEnd]) {
+                    if (u->getVectorNeighbour()[i] == this->grid[xEnd][yEnd]) { // Neighbour End Tile?
                         this->grid[xEnd][yEnd]->setColp(1, true);
 
                         std::vector<Tile*> path;
@@ -194,7 +194,7 @@ bool Maze::shortestPath(SDL_Renderer *renderer, int xStart, int yStart, int xEnd
 
                         path.push_back(crawl);
 
-                        while (crawl != nullptr) {
+                        while (crawl != nullptr) {  // Melakukan perjalanan mundur dari pred
                             path.push_back(crawl);
                             crawl = pred[crawl];
                         }              

@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
                         std::cout << "PLEASE WAIT FOR THE MAZE TO BE GENERATED" << std::endl;
                     }
                     else {
-                        maze->shortestPath(renderer, 31, 14, 5, 5);
+                        maze->shortestPath(renderer, 12, 4, 23, 18);
                     }
                 }
             }
